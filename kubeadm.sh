@@ -60,6 +60,9 @@ initialize_master() {
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
 }
 
 # Function to join the worker node to the master
