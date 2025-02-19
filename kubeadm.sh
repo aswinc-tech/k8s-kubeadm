@@ -12,7 +12,7 @@ set -E
 install_kubernetes_tools() {
     echo "Update and Upgrade Ubuntu"
     sudo apt-get update -y
-    sudo apt-get upgrade -y
+    # sudo apt-get upgrade -y
     echo "Disable Swap"
     sudo swapoff -a
     sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
