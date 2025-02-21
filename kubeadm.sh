@@ -52,8 +52,10 @@ EOF
 
 # Function to initialize the master node
 initialize_master() {
+    sudo hostnamectl set-hostname master
     sudo kubeadm init --pod-network-cidr=192.168.0.0/16
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    echo "configuring kubeconfig"
     mkdir -p $HOME/.kube
     sudo yes | cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -61,6 +63,7 @@ initialize_master() {
 
 # Function to join the worker node to the master
 join_worker() {
+    sudo hostnamectl set-hostname worker
     read -p "Enter the join command provided by the master node: " JOIN_COMMAND
     sudo $JOIN_COMMAND
 }
