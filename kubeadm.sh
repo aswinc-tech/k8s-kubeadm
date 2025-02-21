@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# filepath: /home/avinsc/eks/k8s-kubeadm/kubeadm.sh
-# create a bash file with the following content
-# 2 options master and worker
-# master will install kubeadm, kubectl and kubelet
-# worker will install kubeadm, kubectl and kubelet and join the master
+LOG_FILE="/tmp/kubeadm_install.log"
+exec > >(tee -a $LOG_FILE) 2>&1
 
 set -E
 
@@ -56,10 +53,10 @@ EOF
 # Function to initialize the master node
 initialize_master() {
     sudo kubeadm init --pod-network-cidr=192.168.0.0/16
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    mkdir -p $HOME/.kube
+    sudo yes | cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
 }
 
 # Function to join the worker node to the master
@@ -70,8 +67,7 @@ join_worker() {
 
 # Main script logic
 if [ "$1" == "master" ]; then
-    install_kubernetes_tools
-    initialize_master
+    install_kubernetes_tools && initialize_master
 elif [ "$1" == "worker" ]; then
     install_kubernetes_tools
     join_worker
@@ -79,4 +75,3 @@ else
     echo "Usage: $0 {master|worker}"
     exit 1
 fi
-
