@@ -50,10 +50,17 @@ EOF
     sudo apt-mark hold kubelet kubeadm kubectl
 }
 
+get_instance_public_ip() {
+    instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+    public_ip=$(aws ec2 describe-instances --instance-ids $instance_id --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+    echo "Public IP: $public_ip"
+}
+
 # Function to initialize the master node
 initialize_master() {
     sudo hostnamectl set-hostname master
-    sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+    public_ip=$(get_instance_public_ip)
+    sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --control-plane-endpoint "$public_ip:PORT"
     echo "configuring kubeconfig"
     mkdir -p $HOME/.kube
     sudo yes | sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -65,8 +72,6 @@ initialize_master() {
 # Function to join the worker node to the master
 join_worker() {
     sudo hostnamectl set-hostname worker
-    read -p "Enter the join command provided by the master node: " JOIN_COMMAND
-    sudo $JOIN_COMMAND
 }
 
 # Main script logic
